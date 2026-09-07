@@ -1,0 +1,76 @@
+sku_id,product_name,category,stock_on_hand,reorder_point,safety_stock,unit_cost_usd,supplier_id
+SKU-001,Gasket Ring Eco 1,Hardware,570,366,74,19.41,SUP-05
+SKU-002,Carton Box Prime 2,Consumables,490,267,77,15.0,SUP-02
+SKU-003,Bearing Set Max 3,Packaging,427,253,52,16.03,SUP-03
+SKU-004,Fastener Pack Eco 4,Spare Parts,638,363,118,14.67,SUP-05
+SKU-005,Motor Mount Eco 5,Electronics,311,234,59,11.6,SUP-01
+SKU-006,Carton Box Ultra 6,Hardware,509,326,110,9.06,SUP-03
+SKU-007,Lubricant Prime 7,Consumables,8,233,52,10.33,SUP-06
+SKU-008,Fastener Pack Pro 8,Packaging,531,239,63,10.73,SUP-01
+SKU-009,Gasket Ring Pro 9,Spare Parts,516,345,100,6.17,SUP-07
+SKU-010,Resistor Kit Ultra 10,Electronics,352,246,54,9.67,SUP-10
+SKU-011,Cable Harness Lite 11,Hardware,673,349,106,18.92,SUP-07
+SKU-012,Sensor Module Lite 12,Consumables,371,349,118,10.21,SUP-08
+SKU-013,Resistor Kit Eco 13,Packaging,576,305,94,15.13,SUP-10
+SKU-014,Gasket Ring Lite 14,Spare Parts,20,259,69,11.19,SUP-03
+SKU-015,Bearing Set Eco 15,Electronics,470,279,67,15.48,SUP-07
+SKU-016,Fastener Pack Pro 16,Hardware,433,394,116,13.23,SUP-05
+SKU-017,Resistor Kit Eco 17,Consumables,334,321,73,7.73,SUP-10
+SKU-018,Fastener Pack Ultra 18,Packaging,766,394,130,13.35,SUP-08
+SKU-019,Fastener Pack Lite 19,Spare Parts,604,281,91,15.87,SUP-10
+SKU-020,Gasket Ring Eco 20,Electronics,447,246,56,10.07,SUP-05
+SKU-021,Cable Harness Eco 21,Hardware,322,309,72,13.11,SUP-01
+SKU-022,Gasket Ring Ultra 22,Consumables,594,326,86,16.45,SUP-08
+SKU-023,Gasket Ring Prime 23,Packaging,602,383,98,19.43,SUP-01
+SKU-024,Sensor Module Eco 24,Spare Parts,523,313,92,7.27,SUP-04
+SKU-025,Resistor Kit Max 25,Electronics,373,311,98,8.45,SUP-08
+SKU-026,Motor Mount Pro 26,Hardware,399,393,105,17.15,SUP-10
+SKU-027,Sensor Module Eco 27,Consumables,467,353,75,17.89,SUP-02
+SKU-028,Bearing Set Ultra 28,Packaging,469,360,119,15.99,SUP-07
+SKU-029,Bearing Set Max 29,Spare Parts,474,218,61,17.01,SUP-03
+SKU-030,Sensor Module Pro 30,Electronics,394,224,46,10.83,SUP-10
+SKU-031,Carton Box Eco 31,Hardware,415,224,54,8.04,SUP-05
+SKU-032,Filter Cartridge Prime 32,Consumables,22,366,108,19.44,SUP-01
+SKU-033,Gasket Ring Max 33,Packaging,258,244,83,17.15,SUP-08
+SKU-034,Fastener Pack Eco 34,Spare Parts,359,306,102,5.25,SUP-10
+SKU-035,Lubricant Pro 35,Electronics,382,277,58,5.92,SUP-07
+SKU-036,Cable Harness Pro 36,Hardware,517,270,65,7.41,SUP-03
+SKU-037,Filter Cartridge Lite 37,Consumables,234,249,85,18.62,SUP-08
+SKU-038,Bearing Set Lite 38,Packaging,475,273,89,19.3,SUP-05
+SKU-039,Sensor Module Max 39,Spare Parts,512,321,105,5.66,SUP-10
+SKU-040,Carton Box Lite 40,Electronics,580,344,118,19.27,SUP-07
+SKU-041,Filter Cartridge Ultra 41,Hardware,564,366,120,10.01,SUP-01
+SKU-042,Sensor Module Prime 42,Consumables,316,292,82,11.32,SUP-04
+SKU-043,Fastener Pack Pro 43,Packaging,454,249,65,11.44,SUP-04
+SKU-044,Filter Cartridge Prime 44,Spare Parts,567,246,62,6.08,SUP-05
+SKU-045,Sensor Module Ultra 45,Electronics,458,220,60,12.85,SUP-09
+SKU-046,Bearing Set Max 46,Hardware,297,287,72,10.34,SUP-07
+SKU-047,Gasket Ring Prime 47,Consumables,595,365,123,10.16,SUP-10
+SKU-048,Lubricant Max 48,Packaging,369,275,75,7.03,SUP-09
+SKU-049,Filter Cartridge Ultra 49,Spare Parts,441,254,67,11.58,SUP-10
+SKU-050,Sensor Module Ultra 50,Electronics,275,283,84,6.65,SUP-10
+SKU-051,Fastener Pack Ultra 51,Hardware,151,183,45,98.98,SUP-11
+SKU-052,Fastener Pack Prime 52,Consumables,92,323,103,85.35,SUP-02
+SKU-053,Carton Box Lite 53,Packaging,238,160,42,19.69,SUP-04
+SKU-054,Lubricant Lite 54,Spare Parts,112,237,75,23.91,SUP-11
+SKU-055,Carton Box Prime 55,Electronics,494,204,41,83.25,SUP-12
+SKU-056,Fastener Pack Max 56,Hardware,184,327,73,76.21,SUP-07
+SKU-057,Filter Cartridge Eco 57,Consumables,131,230,51,17.36,SUP-04
+SKU-058,Cable Harness Ultra 58,Packaging,338,158,44,102.3,SUP-01
+SKU-059,Gasket Ring Ultra 59,Spare Parts,26,327,107,43.39,SUP-14
+SKU-060,Bearing Set Prime 60,Electronics,108,308,65,91.79,SUP-04
+SKU-061,Resistor Kit Max 61,Hardware,26,120,29,86.05,SUP-03
+SKU-062,Filter Cartridge Lite 62,Consumables,437,107,30,25.58,SUP-01
+SKU-063,Gasket Ring Eco 63,Packaging,113,259,80,95.92,SUP-08
+SKU-064,Lubricant Lite 64,Spare Parts,597,367,93,58.37,SUP-12
+SKU-065,Bearing Set Lite 65,Electronics,70,102,29,79.74,SUP-12
+SKU-066,Lubricant Max 66,Hardware,231,342,87,70.3,SUP-04
+SKU-067,Cable Harness Max 67,Consumables,95,196,54,30.82,SUP-06
+SKU-068,Gasket Ring Eco 68,Packaging,411,339,80,99.21,SUP-01
+SKU-069,Gasket Ring Prime 69,Spare Parts,9,223,74,118.15,SUP-13
+SKU-070,Lubricant Lite 70,Electronics,50,134,40,8.1,SUP-07
+SKU-071,Bearing Set Lite 71,Hardware,59,80,25,8.13,SUP-11
+SKU-072,Motor Mount Prime 72,Consumables,600,354,101,76.17,SUP-15
+SKU-073,Cable Harness Ultra 73,Packaging,40,331,75,25.25,SUP-02
+SKU-074,Cable Harness Max 74,Spare Parts,401,116,26,114.92,SUP-15
+SKU-075,Motor Mount Ultra 75,Electronics,115,215,52,92.83,SUP-03

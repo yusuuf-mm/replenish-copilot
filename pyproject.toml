@@ -1,0 +1,26 @@
+[project]
+name = "replenish-copilot"
+version = "0.1.0"
+description = "RAG-based inventory replenishment & supplier-delay copilot (LLM Zoomcamp capstone)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit>=1.37",
+    "qdrant-client>=1.9",
+    "sentence-transformers>=3.0",
+    "openai>=1.35",          # OpenRouter via base_url + api_key
+    "python-dotenv>=1.0",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "minsearch>=0.2.0",      # text search baseline (retrieval eval)
+    "sqlitesearch>=0.3.0",   # persistent text/vector index alternative
+    "jupyter>=1.1.1",        # eval notebooks / exploration
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,16 @@
+supplier_id,supplier_name,lead_time_days,sla_compliance_rate,contact_email
+SUP-01,Vendor SUP-01 Industrial,8,0.899,opssup01@example-vendor.com
+SUP-02,Vendor SUP-02 Supply Co.,8,0.884,opssup02@example-vendor.com
+SUP-03,Vendor SUP-03 Industrial,8,0.89,opssup03@example-vendor.com
+SUP-04,Vendor SUP-04 Supply Co.,9,0.743,opssup04@example-vendor.com
+SUP-05,Vendor SUP-05 Industrial,7,0.92,opssup05@example-vendor.com
+SUP-06,Vendor SUP-06 Supply Co.,8,0.954,opssup06@example-vendor.com
+SUP-07,Vendor SUP-07 Industrial,8,0.962,opssup07@example-vendor.com
+SUP-08,Vendor SUP-08 Supply Co.,8,0.951,opssup08@example-vendor.com
+SUP-09,Vendor SUP-09 Industrial,8,0.989,opssup09@example-vendor.com
+SUP-10,Vendor SUP-10 Supply Co.,7,0.963,opssup10@example-vendor.com
+SUP-11,Vendor SUP-11 Industrial,3,0.717,opssup11@example-vendor.com
+SUP-12,Vendor SUP-12 Supply Co.,5,0.904,opssup12@example-vendor.com
+SUP-13,Vendor SUP-13 Industrial,2,0.892,opssup13@example-vendor.com
+SUP-14,Vendor SUP-14 Supply Co.,10,0.883,opssup14@example-vendor.com
+SUP-15,Vendor SUP-15 Industrial,2,0.88,opssup15@example-vendor.com
