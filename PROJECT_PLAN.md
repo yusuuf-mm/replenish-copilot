@@ -13,9 +13,9 @@ row above is still "Not started" or "Blocked."
 | 3 | Generate synthetic CSVs (inventory, suppliers, POs, demand) | Retrieval Flow (2) | Done — 75/15/150/600 rows, headers match architecture.md |
 | 4 | Build `ingest.py`: load, chunk, embed, index policy docs | Ingestion Pipeline (2) | Done — 25 chunks, text + vector indexes verified |
 | 5 | Load CSVs into SQLite | Retrieval Flow (2) | Done — 75/15/150/600 rows in data/replenish.db |
-| 6 | Build `analytics.py`: reorder point, stockout risk, SLA breach calcs | Retrieval Flow (2) | Not started |
-| 7 | Implement base RAG flow: query → retrieve → facts → prompt → LLM → answer | Retrieval Flow (2) | Not started |
-| 8 | Manual test with 5 sample questions | — | Not started |
+| 6 | Build `analytics.py`: reorder point, stockout risk, SLA breach calcs | Retrieval Flow (2) | Done — merged into src/rag.py per Decisions log |
+| 7 | Implement base RAG flow: query → retrieve → facts → prompt → LLM → answer | Retrieval Flow (2) | Done — retrieval verified; synthesis needs OPENROUTER_API_KEY |
+| 8 | Manual test with 5 sample questions | — | Partial — 3/5 retrieval paths verified; full answers blocked on API key |
 
 **Day 1 exit criteria:** one working end-to-end query returning a grounded answer
 combining retrieved policy text and a computed fact.
