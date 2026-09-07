@@ -26,6 +26,10 @@ venv/
 .streamlit/secrets.toml
 .ipynb_checkpoints/
 
+# Local-only working docs (kept out of GitHub)
+CLAUDE.md
+PROJECT_PLAN.md
+
 # OS / editors
 .DS_Store
 Thumbs.db
