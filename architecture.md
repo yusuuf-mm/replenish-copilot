@@ -13,8 +13,8 @@ Deterministic router (code, not LLM)
    +----+----+
    |         |
    v         v
-SQLite route        Qdrant route
-(relational)        (vector, all-MiniLM-L6-v2, 384-dim, cosine, top_k=5)
+SQLite route        Policy route (hybrid, local)
+(relational)        (minsearch text + MiniLM vector 384-dim cosine top_k=5, RRF merge)
    |         |
    +----+----+
         |
@@ -80,11 +80,14 @@ If both empty -> "I don't know."
 | daily_demand | INTEGER | 70% sampled from Kaggle pool, 30% synthetic |
 | forecasted_demand | REAL | |
 
-### Qdrant — `policy_chunks` collection
+### Policy index — SQLite-backed hybrid (`data/policy_index/`, built by `src/ingest.py`)
 
-- Vector size 384, distance Cosine, payload: `{doc_id, section_title, content}`.
-- Chunking: 500 chars, 100 overlap, per markdown section.
+- Text search: minsearch index over `content` (text fields: `content`, `section_title`; keyword field: `doc_id`), persisted via sqlitesearch.
+- Vector search: MiniLM `all-MiniLM-L6-v2` embeddings (384-dim, cosine) over the same chunks.
+- Retrieval per query: text top-5 + vector top-5, merged with RRF (k=60) keyed on chunk id; exact `doc_id` mention boosted to top.
+- Chunking: 500 chars, 100 overlap, per markdown section; payload/fields: `{doc_id, section_title, content}`.
 - 6 docs: POL-001 safety stock, POL-002 SLA penalties, POL-003 stockout prioritization, POL-004 expedited shipping, POL-005 vendor onboarding, POL-006 valuation.
+- No external vector DB — everything runs local (course-lesson pattern; keeps Docker + eval reproducible).
 
 ### Telemetry — SQLite (`data/telemetry.db`)
 
@@ -96,5 +99,5 @@ If both empty -> "I don't know."
 1. **Entity extraction (code)**: `re.findall(r"SKU-\d{3}", q)` + `re.findall(r"SUP-\d{2}", q)`.
    SQL uses `WHERE sku_id IN (...)` — never `LIKE`, never LLM-written SQL.
 2. **Fact queries**: stock/rop/safety join inventory+suppliers; SLA query aggregates POs by supplier (`late` count, on-time rate); demand query averages last-N daily/forecast for cover-days = stock / avg_daily.
-3. **Policy search**: embed query with MiniLM, Qdrant `search(limit=5, score_threshold=0.25)`, filter none (policies are global). Boost exact `doc_id` mention to top.
+3. **Policy search (hybrid)**: minsearch text top-5 + MiniLM vector top-5 (cosine), RRF-merged (k=60); filter none (policies are global). Boost exact `doc_id` mention to top.
 4. **Synthesis prompt**: fixed template — instructions (grounded, cite doc_id + sku numbers, "I don't know" fallback) + facts block + chunks block + user question. One OpenRouter call, temperature 0.0.

@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "streamlit>=1.37",
-    "qdrant-client>=1.9",
     "sentence-transformers>=3.0",
     "openai>=1.35",          # OpenRouter via base_url + api_key
     "python-dotenv>=1.0",

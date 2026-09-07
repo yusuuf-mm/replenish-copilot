@@ -3,8 +3,8 @@
 ## Phase 1 — Data Engineering & Ingestion Setup
 
 - [ ] Run `uv run python scripts/generate_data.py` (Kaggle-seeded; 75 SKUs / 15 suppliers / 150 POs / 600 demand / 6 policies with `doc_id` headers).
-- [ ] Write `src/ingest.py`: create SQLite schemas per `architecture.md`, bulk-load 4 CSVs, chunk policies (500/100), embed with MiniLM, upsert to Qdrant `policy_chunks` (recreate collection, 384/Cosine).
-- [ ] Acceptance: `data/replenish.db` row counts match CSVs; Qdrant points > 0; `ingest.py` re-runnable (idempotent).
+- [ ] Write `src/ingest.py`: create SQLite schemas per `architecture.md`, bulk-load 4 CSVs, chunk policies (500/100), embed with MiniLM, build minsearch text + vector indexes (persist via sqlitesearch).
+- [ ] Acceptance: `data/replenish.db` row counts match CSVs; hybrid index returns hits for spot-check queries; `ingest.py` re-runnable (idempotent).
 
 ## Phase 2 — Dual-RAG Core Engine (`src/rag.py`)
 
@@ -17,7 +17,7 @@
 ## Phase 3 — Offline & LLM-as-a-Judge Evaluation
 
 - [ ] Freeze `data/ground_truth.csv` (~20 rows: `question, doc_id, expected_facts`) — doc_id is the join label.
-- [ ] Build `src/eval_retrieval.py`: `compute_relevance()` -> Hit Rate@k + MRR via `evaluate(ground_truth, search_fn)`; compare text (SQLite FTS/keyword) vs vector (Qdrant) vs hybrid (RRF merge); grid-tune `top_k` / threshold; save `data/eval_results/retrieval.json`.
+- [ ] Build `src/eval_retrieval.py`: `compute_relevance()` -> Hit Rate@k + MRR via `evaluate(ground_truth, search_fn)`; compare text (minsearch) vs vector (MiniLM) vs hybrid (RRF merge); grid-tune boosts + `top_k`; save `data/eval_results/retrieval.json`.
 - [ ] Build `src/eval_llm_judge.py`: OpenRouter judge scores each RAG answer (`good/bad` + reasoning; relevance + faithfulness); save `data/eval_results/llm_judge.csv`; read bad rows to fix prompt/retrieval.
 - [ ] Acceptance: best retrieval config selected by numbers (not vibes); judge pass rate reported in README.
 
@@ -26,5 +26,5 @@
 - [ ] `src/app.py` (Streamlit): chat input, answer + source citations (doc_id, SKU numbers), +1/-1 + text feedback, writes `conversations` + `feedback` rows; per-call judge (sampled) stored as `source=judge`.
 - [ ] `src/db.py` + `src/metrics.py`: `LLMCallRecord` (model, tokens, latency, cost), `save_conversation() RETURNING id`, `save_feedback()`.
 - [ ] Dashboard tab with 5 charts: Request Volume, Latency p50/p95, Cost Tracking, Feedback Score (+1/-1 split), Online Relevance (judge label distribution) + recent conversations table.
-- [ ] `Dockerfile` + `docker-compose.yml` (app only; Qdrant external via `QDRANT_HOST`): `docker-compose up --build`, verify cold-start `ingest` + 8 queries pass.
+- [ ] `Dockerfile` + `docker-compose.yml` (single app container; all retrieval is local SQLite/minsearch): `docker-compose up --build`, verify cold-start `ingest` + 8 queries pass.
 - [ ] Finalize README (setup, arch diagram, eval numbers, repro steps). Acceptance: clone -> compose up -> working demo.

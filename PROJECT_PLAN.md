@@ -8,11 +8,11 @@ row above is still "Not started" or "Blocked."
 
 | # | Task | Rubric criterion | Status |
 |---|---|---|---|
-| 1 | Problem statement + README skeleton | Problem Description (2) | Not started |
-| 2 | Write 5–8 policy markdown docs | Retrieval Flow (2) | Not started |
-| 3 | Generate synthetic CSVs (inventory, suppliers, POs, demand) | Retrieval Flow (2) | Not started |
-| 4 | Build `ingest.py`: load, chunk, embed, index policy docs | Ingestion Pipeline (2) | Not started |
-| 5 | Load CSVs into SQLite | Retrieval Flow (2) | Not started |
+| 1 | Problem statement + README skeleton | Problem Description (2) | Done |
+| 2 | Write 5–8 policy markdown docs | Retrieval Flow (2) | Done — 6 docs verified, all with doc_id |
+| 3 | Generate synthetic CSVs (inventory, suppliers, POs, demand) | Retrieval Flow (2) | Done — 75/15/150/600 rows, headers match architecture.md |
+| 4 | Build `ingest.py`: load, chunk, embed, index policy docs | Ingestion Pipeline (2) | Done — 25 chunks, text + vector indexes verified |
+| 5 | Load CSVs into SQLite | Retrieval Flow (2) | Done — 75/15/150/600 rows in data/replenish.db |
 | 6 | Build `analytics.py`: reorder point, stockout risk, SLA breach calcs | Retrieval Flow (2) | Not started |
 | 7 | Implement base RAG flow: query → retrieve → facts → prompt → LLM → answer | Retrieval Flow (2) | Not started |
 | 8 | Manual test with 5 sample questions | — | Not started |
@@ -42,7 +42,7 @@ prompt/model) ready to paste into the README.
 | 1 | Streamlit chat UI with source citations | Interface (2) | Not started |
 | 2 | Thumbs up/down feedback capture | Monitoring (2) | Not started |
 | 3 | Dashboard with 5+ charts | Monitoring (2) | Not started |
-| 4 | `docker-compose.yml` covering app + all services | Containerization (2) | Not started |
+| 4 | `docker-compose.yml` covering the app (all retrieval local, no external services) | Containerization (2) | Not started |
 | 5 | README finalization: setup, architecture, eval results | Reproducibility (2) | Not started |
 | 6 | Full reproducibility test: clone → compose up → working app | Reproducibility (2) | Not started |
 | 7 | (If ahead) cloud deploy | Bonus +2 | Not started |
@@ -56,3 +56,6 @@ wait until end of day to surface it.)*
 
 ## Decisions log
 *(Claude Code: append here any deviation from ARCHITECTURE.md, with a one-line reason.)*
+
+- Dropped external Qdrant; policy retrieval is local hybrid (minsearch text + MiniLM vector, RRF merge, sqlitesearch persistence) per the Recommendation.md hybrid plan — removes Docker dependency, keeps eval reproducible.
+- `analytics.py` (Day 1 task 6) merged into `src/rag.py`/`src/db.py` to match the canonical `src/` layout in CLAUDE.md — no behavior change, avoids a one-function module.
