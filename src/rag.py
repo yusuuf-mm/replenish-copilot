@@ -24,7 +24,7 @@ INDEX_DIR = ROOT / "data" / "policy_index"
 TEXT_DB = INDEX_DIR / "text.db"
 VECTOR_DB = INDEX_DIR / "vectors.db"
 
-MODEL = os.environ.get("OPENROUTER_MODEL", "minimax/minimax-m3:free")
+MODEL = os.environ.get("OPENROUTER_MODEL", "google/gemma-4-26b-a4b-it:free")
 EMBED_MODEL = "all-MiniLM-L6-v2"
 TOP_K = 5
 RRF_K = 60
@@ -182,12 +182,14 @@ def synthesize(question: str, ctx: dict) -> str:
     from openai import OpenAI
 
     load_dotenv(ROOT / ".env")
+    # Read model here (not at import) so .env changes take effect.
+    model = os.environ.get("OPENROUTER_MODEL", MODEL)
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY missing — add it to .env")
     client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
     resp = client.chat.completions.create(
-        model=MODEL, temperature=0.0,
+        model=model, temperature=0.0,
         messages=[{"role": "system", "content": INSTRUCTIONS},
                   {"role": "user", "content": build_prompt(question, ctx)}],
     )
