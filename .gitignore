@@ -29,6 +29,9 @@ venv/
 # Local-only working docs (kept out of GitHub)
 CLAUDE.md
 PROJECT_PLAN.md
+plan.md
+PHASE1_SUMMARY.md
+PHASE2_SUMMARY.md
 
 # OS / editors
 .DS_Store
