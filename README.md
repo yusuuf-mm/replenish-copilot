@@ -53,6 +53,8 @@ No agent loops — full flow is a single deterministic pass.
 
 ## Evaluation
 
-- Retrieval: Hit Rate@k + MRR, text vs vector vs hybrid (`src/eval_retrieval.py`).
-- Answers: LLM-as-a-Judge good/bad + reasoning (`src/eval_llm_judge.py`).
+- Retrieval (20 frozen Qs): text 1.00/0.858, vector 0.90/0.825,
+  hybrid (RRF, production) 1.00/0.829 — hybrid kept for paraphrase robustness.
+- Answers (LLM judge, 13 clean verdicts): A-citations 8/13 vs B-plain 7/13 —
+  A kept. 7 rows pending re-judge (free-tier quota); see PHASE2_SUMMARY.md.
 - See `architecture.md` (design) and `plan.md` (4-phase build plan).
