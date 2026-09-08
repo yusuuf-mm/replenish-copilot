@@ -7,6 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
     "streamlit>=1.37",
     "sentence-transformers>=3.0",
+    "torch>=2.2",               # direct so the pytorch-cpu index pin applies
     "openai>=1.35",          # OpenRouter via base_url + api_key
     "python-dotenv>=1.0",
     "pandas>=2.2",
@@ -23,3 +24,13 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# CPU-only torch: the container does MiniLM embedding on CPU, so skip the
+# ~2.5GB of nvidia-*/triton GPU wheels (smaller image, faster build).
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }

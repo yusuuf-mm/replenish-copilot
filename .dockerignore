@@ -1,0 +1,13 @@
+# Keep the Docker build context lean (esp. on Windows: .venv is gigabytes).
+.venv/
+venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+data/*.db
+data/*.db-journal
+.env
+.DS_Store
+.ipynb_checkpoints/
+.pytest_cache/

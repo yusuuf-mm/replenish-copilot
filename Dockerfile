@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.4
 FROM python:3.12-slim
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -7,10 +8,14 @@ ENV PATH="/app/.venv/bin:$PATH" \
     HF_HUB_OFFLINE=0
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --locked
+# uv cache mount: wheel downloads shared across builds/projects, so a failed
+# or repeated build reuses everything instead of re-downloading.
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked
 
 # Bake the embedding model into the image so cold starts need no HF access.
-RUN uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=cache,target=/root/.cache/huggingface \
+    uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 COPY src/ src/
 COPY data/ data/
