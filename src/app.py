@@ -1,7 +1,7 @@
 """Streamlit UI: chat + telemetry dashboard (Phase 3).
 
 Run: uv run streamlit run src/app.py
-Tab 1 (Chat): ask -> grounded answer + citations + metrics, +1/-1 feedback.
+Tab 1 (Chat): conversational Q&A with citations, metrics, +1/-1 feedback.
 Tab 2 (Dashboard): 5 charts (volume, latency, cost, feedback, relevance).
 """
 
@@ -25,6 +25,38 @@ JUDGE_PROMPT = """Rate this RAG answer's relevance to the question.
 Reply with one word: RELEVANT, PARTLY_RELEVANT, or NON_RELEVANT.
 Question: {question}
 Answer: {answer}"""
+
+CSS = """
+<style>
+.answer-panel { background: #f2f4ea; border: 1px solid #d5dac8;
+  border-radius: 10px; padding: 1rem 1.2rem; margin: 0.5rem 0; }
+.src-chip { display: inline-block; background: #e2e9d8; color: #2f5d3a;
+  border-radius: 999px; padding: 0.1rem 0.7rem; margin: 0.1rem 0.2rem 0.1rem 0;
+  font-size: 0.8rem; font-weight: 600; }
+.pill { display: inline-block; border-radius: 999px; padding: 0.15rem 0.8rem;
+  font-size: 0.8rem; font-weight: 700; }
+.pill-ok { background: #e0ead9; color: #2f5d3a; }
+.pill-warn { background: #f6ead0; color: #8a5a00; }
+.pill-bad { background: #f6dcd6; color: #8f2d22; }
+.stat-line { color: #5a6353; font-size: 0.85rem; }
+h2 { letter-spacing: -0.01em; }
+</style>
+"""
+
+PILL = {"RELEVANT": ("pill-ok", "relevant"),
+        "PARTLY_RELEVANT": ("pill-warn", "partly relevant"),
+        "NON_RELEVANT": ("pill-bad", "not relevant")}
+
+
+def pill(verdict: str) -> str:
+    """Full-tint status pill for a judge verdict."""
+    cls, label = PILL.get(verdict, ("pill-warn", verdict.lower()))
+    return f'<span class="pill {cls}">{label}</span>'
+
+
+def chips(ids: list[str]) -> str:
+    """Inline source chips for doc/sku ids."""
+    return " ".join(f'<span class="src-chip">{i}</span>' for i in ids) or "—"
 
 
 def online_judge(question: str, answer: str) -> str:
@@ -53,99 +85,137 @@ def online_judge(question: str, answer: str) -> str:
         return ""
 
 
+def answer_turn(question: str) -> None:
+    """Run one Q&A turn: retrieve, synthesize, log, judge."""
+    t0 = time.time()
+    ctx = retrieve(question)
+    try:
+        answer = synthesize(question, ctx)
+    except Exception as e:  # noqa: BLE001 — show, don't crash
+        st.error(f"LLM call failed: {e}")
+        return
+    latency = round(time.time() - t0, 2)
+    pt = len(question) // 4 + 1500  # rough estimate, labeled as such
+    ct = len(answer) // 4
+    record = LLMCallRecord(
+        model=os.environ.get("OPENROUTER_MODEL", MODEL), question=question,
+        answer=answer, prompt_tokens=pt, completion_tokens=ct,
+        total_tokens=pt + ct, latency_s=latency,
+        cost_usd=estimate_cost(MODEL, pt, ct))
+    cid = db.save_conversation(record)
+    verdict = online_judge(question, answer)
+    if verdict:
+        db.save_feedback(cid, "judge", verdict)
+    st.session_state["history"].append({
+        "answer": answer, "policies": [c.get("doc_id") for c in ctx["policies"]],
+        "skus": [r["sku_id"] for r in ctx["stock"][:10]],
+        "latency": latency, "tokens": pt + ct, "verdict": verdict, "cid": cid})
+    st.session_state["cid"] = cid
+
+
 def chat_tab() -> None:
-    """Q&A with citations, metrics, and feedback buttons."""
-    st.header("Replenishment Copilot")
-    q = st.text_input("Ask about stock, reorders, or supplier delays:",
-                      placeholder="Which SKUs are at stockout risk?")
-    if st.button("Ask") and q.strip():
-        with st.spinner("Retrieving + synthesizing..."):
-            t0 = time.time()
-            ctx = retrieve(q)
-            try:
-                answer = synthesize(q, ctx)
-            except Exception as e:  # noqa: BLE001 — show, don't crash
-                st.error(f"LLM call failed: {e}")
-                return
-            latency = round(time.time() - t0, 2)
-        st.subheader("Answer")
-        st.write(answer)
-        with st.expander("Sources"):
-            st.write("Policies:",
-                     [c.get("doc_id") for c in ctx["policies"]])
-            st.write("SKUs:",
-                     [r["sku_id"] for r in ctx["stock"][:10]])
-        pt = len(q) // 4 + 1500  # rough estimate, labeled as such
-        ct = len(answer) // 4
-        record = LLMCallRecord(
-            model=os.environ.get("OPENROUTER_MODEL", MODEL), question=q,
-            answer=answer, prompt_tokens=pt, completion_tokens=ct,
-            total_tokens=pt + ct, latency_s=latency,
-            cost_usd=estimate_cost(MODEL, pt, ct))
-        cid = db.save_conversation(record)
-        st.session_state["cid"] = cid
-        st.caption(f"~{latency}s | ~{pt + ct} tokens (est.) | "
-                   f"cost ${record.cost_usd:.4f}")
-        verdict = online_judge(q, answer)
-        if verdict:
-            db.save_feedback(cid, "judge", verdict)
-            st.caption(f"Online judge: {verdict}")
+    """Conversational Q&A with history, citations, and feedback."""
+    st.header("Replenishment copilot")
+    st.caption("Grounded in live stock facts and cited policy. "
+               "Citations after every claim.")
+    if "history" not in st.session_state:
+        st.session_state["history"] = []
+    for turn in st.session_state["history"]:
+        with st.chat_message("assistant"):
+            st.markdown(f'<div class="answer-panel">{turn["answer"]}</div>',
+                        unsafe_allow_html=True)
+            st.markdown(chips(turn["policies"] + turn["skus"][:5]),
+                        unsafe_allow_html=True)
+            meta = (f'<span class="stat-line">{turn["latency"]}s, '
+                    f'about {turn["tokens"]} tokens (est.)</span>')
+            if turn["verdict"]:
+                meta += " " + pill(turn["verdict"])
+            st.markdown(meta, unsafe_allow_html=True)
+    q = st.chat_input("Which SKUs are at stockout risk?")
+    if q and q.strip():
+        with st.chat_message("user"):
+            st.write(q.strip())
+        with st.chat_message("assistant"):
+            with st.spinner("Checking stock and policy..."):
+                answer_turn(q.strip())
+            turn = st.session_state["history"][-1]
+            st.markdown(f'<div class="answer-panel">{turn["answer"]}</div>',
+                        unsafe_allow_html=True)
+            st.markdown(chips(turn["policies"] + turn["skus"][:5]),
+                        unsafe_allow_html=True)
     if "cid" in st.session_state:
-        c1, c2 = st.columns(2)
-        if c1.button("+1 helpful"):
+        st.divider()
+        c1, c2 = st.columns([1, 1])
+        if c1.button("This helped", use_container_width=True):
             db.save_feedback(st.session_state["cid"], "user", "+1")
-            st.success("Thanks!")
-        if c2.button("-1 not helpful"):
+            st.success("Noted, thanks.")
+        if c2.button("Not quite right", use_container_width=True):
             db.save_feedback(st.session_state["cid"], "user", "-1")
-            st.success("Thanks — we'll review.")
+            st.success("Flagged for review.")
 
 
 def dashboard_tab() -> None:
     """5-chart telemetry dashboard + recent conversations."""
-    st.header("Telemetry Dashboard")
+    st.header("Operations telemetry")
     stats = db.get_stats()
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Conversations", stats["total"])
-    c2.metric("Avg latency (s)", round(stats["avg_latency"], 2))
-    c3.metric("Total cost ($)", round(stats["total_cost"], 4))
-    c4.metric("Avg tokens", int(stats["avg_tokens"]))
+    c1.metric("Questions asked", stats["total"])
+    c2.metric("Mean latency", f'{stats["avg_latency"]:.1f}s')
+    c3.metric("Spend to date", f'${stats["total_cost"]:.4f}')
+    c4.metric("Helpful votes", f'{stats["thumbs_up"]}/{stats["thumbs_up"] + stats["thumbs_down"]}')
     rows = db.get_recent(100)
     if not rows:
-        st.info("No traffic yet — ask a question in the Chat tab.")
+        st.info("Quiet here. Answers from the Chat tab will populate "
+                "these charts.")
         return
     import pandas as pd
 
     df = pd.DataFrame(rows)
     df["day"] = df["created_at"].str[:10]
-    st.subheader("1. Request volume (per day)")
-    st.bar_chart(df.groupby("day").size())
-    st.subheader("2. Latency over time (s)")
-    st.line_chart(df.iloc[::-1].reset_index(drop=True)["latency_s"])
+    st.divider()
+    st.subheader("Request volume")
+    st.caption("Questions per day. Gaps mean nobody asked, not missing data.")
+    st.bar_chart(df.groupby("day").size(), color="#2f5d3a")
+    st.divider()
+    st.subheader("Latency")
     lat = sorted(df["latency_s"].tolist())
     p50 = statistics.median(lat)
     p95 = lat[min(len(lat) - 1, int(len(lat) * 0.95))]
-    st.caption(f"p50 = {p50:.2f}s | p95 = {p95:.2f}s")
-    st.subheader("3. Cumulative cost ($)")
-    st.line_chart(df.iloc[::-1]["cost_usd"].cumsum().reset_index(drop=True))
-    st.subheader("4. User feedback")
-    st.bar_chart({"thumbs up": stats["thumbs_up"],
-                  "thumbs down": stats["thumbs_down"]})
-    st.subheader("5. Online judge relevance")
+    st.caption(f"Median {p50:.1f}s, p95 {p95:.1f}s across "
+               f"{len(lat)} answers. Embeddings load once, then stay warm.")
+    st.line_chart(df.iloc[::-1].reset_index(drop=True)["latency_s"],
+                  color="#2f5d3a")
+    st.divider()
+    st.subheader("Spend")
+    st.caption("Free-tier models record $0. Paid usage accumulates below.")
+    st.line_chart(df.iloc[::-1]["cost_usd"].cumsum().reset_index(drop=True),
+                  color="#8a5a00")
+    st.divider()
+    st.subheader("Human feedback")
+    st.bar_chart({"helpful": stats["thumbs_up"],
+                  "not quite": stats["thumbs_down"]}, color="#2f5d3a")
+    st.divider()
+    st.subheader("Judge relevance")
     rel = db.get_relevance_stats()
     if rel:
-        st.bar_chart(rel)
+        st.bar_chart(rel, color="#2f5d3a")
     else:
-        st.caption("No judge verdicts yet.")
-    st.subheader("Recent conversations")
+        st.caption("No judge verdicts yet. They appear after answered "
+                   "questions.")
+    st.divider()
+    st.subheader("Recent answers")
     st.dataframe(df[["created_at", "question", "answer", "latency_s",
-                      "total_tokens"]].head(20))
+                      "total_tokens"]].head(20), use_container_width=True)
 
 
 def main() -> None:
     """App entry: init telemetry tables, render tabs."""
+    st.set_page_config(page_title="Replenishment copilot",
+                       page_icon="boxes", layout="wide")
+    st.markdown(CSS, unsafe_allow_html=True)
     db.init_db()
-    st.title("replenish-copilot")
-    tab1, tab2 = st.tabs(["Chat", "Dashboard"])
+    st.title("Replenishment copilot")
+    tab1, tab2 = st.tabs(["Ask", "Telemetry"])
     with tab1:
         chat_tab()
     with tab2:

@@ -5,6 +5,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
 ENV PATH="/app/.venv/bin:$PATH" \
     HF_HUB_OFFLINE=0 \
+    HF_HOME=/app/.hf-cache \
     UV_HTTP_TIMEOUT=120
 
 COPY pyproject.toml uv.lock ./
@@ -12,9 +13,10 @@ COPY pyproject.toml uv.lock ./
 # or repeated build reuses everything instead of re-downloading.
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked
 
-# Bake the embedding model into the image so cold starts need no HF access.
+# Bake the embedding model into a real image layer (NOT a cache mount: cache
+# mounts are discarded after the build). Runtime sets HF_HUB_OFFLINE=1 and
+# reuses /app/.hf-cache with no network.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=cache,target=/root/.cache/huggingface \
     uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 COPY src/ src/

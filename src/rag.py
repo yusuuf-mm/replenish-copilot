@@ -133,14 +133,24 @@ def policy_search_text(question: str, top_k: int = TOP_K) -> list[dict]:
     return hits
 
 
+_EMBEDDER = None
+
+
+def get_embedder():
+    """Process-wide MiniLM singleton (avoids reloading weights per query)."""
+    global _EMBEDDER
+    if _EMBEDDER is None:
+        from sentence_transformers import SentenceTransformer
+
+        _EMBEDDER = SentenceTransformer(EMBED_MODEL)
+    return _EMBEDDER
+
+
 def policy_search_vector(question: str, top_k: int = TOP_K) -> list[dict]:
     """Vector-only policy search (MiniLM 384-dim, cosine)."""
     from sqlitesearch import VectorSearchIndex
 
-    from sentence_transformers import SentenceTransformer
-
-    model = SentenceTransformer(EMBED_MODEL)
-    qvec = model.encode(question)
+    qvec = get_embedder().encode(question)
     index = VectorSearchIndex(
         keyword_fields=["doc_id"], mode="lsh", db_path=str(VECTOR_DB))
     hits = index.search(qvec, num_results=top_k)
