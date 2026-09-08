@@ -54,3 +54,25 @@ These steps address both the immediate stockout risk (stock_on_hand ≤ safe
 When should the planner use expedited shipping?,POL-004,A-citations,I don't know.,bad,judge failed after retries
 When should the planner use expedited shipping?,POL-004,B-plain,I don't know.,bad,The answer provides no relevant information about when expedited shipping should be used.
 Who approves expedited freight over $500?,POL-004,A-citations,The ops manager approves expedited freight over $500. [POL-004],bad,judge failed after retries
+Who approves expedited freight over $500?,POL-004,B-plain,Ops manager — [POL-004],good,"The answer correctly identifies the ops manager as the approver for expedited freight over $500, aligning with the expected fact."
+What is required to onboard a new vendor?,POL-005,A-citations,"New vendors must provide a business license, an ISO9001 (or equivalent) quality certification, three trade references, and a lead‑time commitment letter, and their contact email must be entered in suppliers.csv before any purchase order is issued. [POL-005]",good,"the answer includes all required items (license, ISO9001, three references, lead‑time letter) even though it adds extra details."
+What is required to onboard a new vendor?,POL-005,B-plain,"To onboard a new vendor you must provide:
+
+- A valid business license  
+- A quality certification (e.g., ISO 9001 or equivalent)  
+- Three trade references  
+- A lead‑time commitment letter  
+
+Additionally, the supplier’s contact email must be entered in suppliers.csv before any purchase order can be issued [POL-005].",good,"The answer lists all four required items (license, ISO 9001, three references, lead‑time letter) and does not omit or contradict any expected fact."
+What scorecard decides if a vendor becomes preferred?,POL-005,A-citations,"The Vendor Onboarding Scorecard determines preferred status, using on‑time rate (40%), quality pass rate (30%), responsiveness (15%) and cost competitiveness (15%), with a minimum score of 75/100 required [POL-005].",good,the answer includes all the specified criteria and the required minimum score.
+What scorecard decides if a vendor becomes preferred?,POL-005,B-plain,"The Vendor Onboarding Scorecard (first 90 days) determines preferred status, using on‑time rate (40%), quality pass rate (30%), responsiveness (15%) and cost competitiveness (15%), with a minimum score of 75/100【POL-005】.",good,the answer correctly lists the weightings and minimum score matching the expected facts.
+How is inventory valued in this company?,POL-006,A-citations,"Inventory is valued using a weighted‑average cost method based on the unit_cost_usd from the inventory master, and the valuation is revalued monthly. [POL-006]",good,the answer correctly states weighted‑average cost based on unit_cost_usd and monthly revaluation.
+How is inventory valued in this company?,POL-006,B-plain,I don't know.,bad,judge failed after retries
+What write-down applies to obsolete stock over 180 days?,POL-006,A-citations,I don't know.,bad,judge failed after retries
+What write-down applies to obsolete stock over 180 days?,POL-006,B-plain,I don't know.,bad,judge failed after retries
+What must the planner do before issuing a PO to a new supplier?,POL-005,A-citations,I don't know.,bad,judge failed after retries
+What must the planner do before issuing a PO to a new supplier?,POL-005,B-plain,I don't know.,bad,judge failed after retries
+How are SLA breaches escalated by the planner?,POL-002,A-citations,I don't know.,bad,judge failed after retries
+How are SLA breaches escalated by the planner?,POL-002,B-plain,I don't know.,bad,judge failed after retries
+What compares against expedite cost in the approval decision?,POL-004,A-citations,I don't know.,bad,judge failed after retries
+What compares against expedite cost in the approval decision?,POL-004,B-plain,I don't know.,bad,judge failed after retries

@@ -93,10 +93,45 @@ def load_done() -> set[tuple[str, str]]:
         return {(r["question"], r["prompt"]) for r in csv.DictReader(f)}
 
 
+def rejudge_failed() -> None:
+    """Re-run the judge on rows whose verdict is retry-noise, keep answers."""
+    with open(OUT, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    client, model = get_client()
+    fixed = 0
+    for r in rows:
+        if r["reasoning"] != "judge failed after retries":
+            continue
+        with open(ROOT / "data" / "ground_truth.csv", newline="",
+                  encoding="utf-8") as f:
+            expected = {g["question"]: g["expected_facts"]
+                        for g in csv.DictReader(f)}
+        score, reason = judge(client, model, r["question"],
+                              expected.get(r["question"], ""), r["answer"])
+        r["score"], r["reasoning"] = score, reason
+        fixed += 1
+        print(f"rejudged {r['prompt']}: {score} - "
+              f"{reason[:80].encode('ascii', 'replace').decode()}",
+              flush=True)
+    with open(OUT, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["question", "doc_id", "prompt",
+                                          "answer", "score", "reasoning"])
+        w.writeheader()
+        w.writerows(rows)
+    print(f"Fixed {fixed} rows -> {OUT}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--rejudge-failed", action="store_true",
+                    help="re-run judge only for rows marked "
+                         "'judge failed after retries'")
     args = ap.parse_args()
+
+    if args.rejudge_failed:
+        rejudge_failed()
+        return
 
     with open(ROOT / "data" / "ground_truth.csv", newline="",
               encoding="utf-8") as f:
