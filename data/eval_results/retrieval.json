@@ -1,0 +1,21 @@
+{
+  "text": {
+    "hit_rate": 1.0,
+    "mrr": 0.858,
+    "n": 20,
+    "top_k": 5
+  },
+  "vector": {
+    "hit_rate": 0.9,
+    "mrr": 0.825,
+    "n": 20,
+    "top_k": 5
+  },
+  "hybrid": {
+    "hit_rate": 1.0,
+    "mrr": 0.829,
+    "n": 20,
+    "top_k": 5
+  },
+  "winner": "text"
+}

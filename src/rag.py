@@ -118,27 +118,38 @@ def sla_facts(suppliers: list[str]) -> list[dict]:
         conn.close()
 
 
-def policy_search(question: str, top_k: int = TOP_K) -> list[dict]:
-    """Hybrid: minsearch text top-k + MiniLM vector top-k, RRF-merged."""
-    from sqlitesearch import TextSearchIndex, VectorSearchIndex
+def policy_search_text(question: str, top_k: int = TOP_K) -> list[dict]:
+    """Text-only policy search (minsearch via sqlitesearch)."""
+    from sqlitesearch import TextSearchIndex
 
-    text_index = TextSearchIndex(
+    index = TextSearchIndex(
         text_fields=["content", "section_title"],
         keyword_fields=["doc_id"],
         db_path=str(TEXT_DB),
     )
-    text_hits = text_index.search(question, num_results=top_k)
-    text_index.close()
+    hits = index.search(question, num_results=top_k)
+    index.close()
+    return hits
+
+
+def policy_search_vector(question: str, top_k: int = TOP_K) -> list[dict]:
+    """Vector-only policy search (MiniLM 384-dim, cosine)."""
+    from sqlitesearch import VectorSearchIndex
 
     from sentence_transformers import SentenceTransformer
 
     model = SentenceTransformer(EMBED_MODEL)
     qvec = model.encode(question)
-    vec_index = VectorSearchIndex(
+    index = VectorSearchIndex(
         keyword_fields=["doc_id"], mode="lsh", db_path=str(VECTOR_DB))
-    vec_hits = vec_index.search(qvec, num_results=top_k)
-    vec_index.close()
+    hits = index.search(qvec, num_results=top_k)
+    index.close()
+    return hits
 
+
+def rrf_merge(text_hits: list[dict], vec_hits: list[dict],
+              top_k: int = TOP_K) -> list[dict]:
+    """Reciprocal-rank fuse two ranked chunk lists keyed on chunk_id."""
     fused: dict[str, tuple[float, dict]] = {}
     for rank, h in enumerate(text_hits):
         key = h.get("chunk_id", h["content"][:60])
@@ -146,11 +157,17 @@ def policy_search(question: str, top_k: int = TOP_K) -> list[dict]:
     for rank, h in enumerate(vec_hits):
         key = h.get("chunk_id", h["content"][:60])
         fused[key] = (fused.get(key, (0.0, h))[0] + 1 / (RRF_K + rank + 1), h)
-    ranked = sorted(fused.values(), key=lambda t: -t[0])
+    return [h for _, h in sorted(fused.values(), key=lambda t: -t[0])[:top_k]]
+
+
+def policy_search(question: str, top_k: int = TOP_K) -> list[dict]:
+    """Hybrid: minsearch text top-k + MiniLM vector top-k, RRF-merged."""
+    ranked = rrf_merge(policy_search_text(question, top_k),
+                       policy_search_vector(question, top_k), top_k)
     docs = [d for d in DOC_RE.findall(question)]
     if docs:  # exact doc_id mention jumps to top
-        ranked.sort(key=lambda t: t[1].get("doc_id") not in docs)
-    return [h for _, h in ranked[:top_k]]
+        ranked.sort(key=lambda h: h.get("doc_id") not in docs)
+    return ranked
 
 
 def retrieve(question: str) -> dict:
@@ -176,7 +193,7 @@ def build_prompt(question: str, ctx: dict) -> str:
     )
 
 
-def synthesize(question: str, ctx: dict) -> str:
+def synthesize(question: str, ctx: dict, instructions: str = INSTRUCTIONS) -> str:
     """Single OpenRouter call (temperature 0.0). Needs OPENROUTER_API_KEY."""
     from dotenv import load_dotenv
     from openai import OpenAI
@@ -193,10 +210,11 @@ def synthesize(question: str, ctx: dict) -> str:
     for _ in range(2):
         resp = client.chat.completions.create(
             model=model, temperature=0.0,
-            messages=[{"role": "system", "content": INSTRUCTIONS},
+            messages=[{"role": "system", "content": instructions},
                       {"role": "user", "content": build_prompt(question, ctx)}],
         )
-        answer = resp.choices[0].message.content
+        choices = resp.choices or []
+        answer = choices[0].message.content if choices else None
         if answer and answer.strip():
             return answer
     return "I don't know."
