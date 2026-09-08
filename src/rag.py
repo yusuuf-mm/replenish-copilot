@@ -217,7 +217,9 @@ def synthesize(question: str, ctx: dict, instructions: str = INSTRUCTIONS) -> st
         raise RuntimeError("OPENROUTER_API_KEY missing — add it to .env")
     client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
     # Free-tier models flake (empty completions, timeouts, rate limits):
-    # retry with backoff, then fall back to abstention instead of crashing.
+    # retry with backoff. Transport failures raise (caller shows an error);
+    # only a genuine empty/model abstention returns "I don't know."
+    last_error: Exception | None = None
     for attempt in range(3):
         try:
             resp = client.chat.completions.create(
@@ -226,7 +228,8 @@ def synthesize(question: str, ctx: dict, instructions: str = INSTRUCTIONS) -> st
                           {"role": "user",
                            "content": build_prompt(question, ctx)}],
             )
-        except Exception:
+        except Exception as e:  # noqa: BLE001
+            last_error = e
             time.sleep(5 * (attempt + 1))
             continue
         choices = resp.choices or []
@@ -234,6 +237,8 @@ def synthesize(question: str, ctx: dict, instructions: str = INSTRUCTIONS) -> st
         if answer and answer.strip():
             return answer
         time.sleep(3)
+    if last_error is not None:
+        raise RuntimeError(f"LLM unavailable after 3 attempts: {last_error}")
     return "I don't know."
 
 

@@ -166,7 +166,11 @@ def main() -> None:
                                 ("B-plain", PROMPT_B)]:
                 if (row["question"], name) in done:
                     continue
-                answer = synthesize(row["question"], ctx, instructions=instr)
+                try:
+                    answer = synthesize(row["question"], ctx,
+                                        instructions=instr)
+                except Exception as e:  # noqa: BLE001 — transport failure
+                    answer = f"ERROR: {e.__class__.__name__}: {e}"[:500]
                 score, reason = judge(client, judge_model, row["question"],
                                       row["expected_facts"], answer)
                 w.writerow({"question": row["question"], "doc_id": row["doc_id"],
