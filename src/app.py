@@ -28,17 +28,21 @@ Answer: {answer}"""
 
 CSS = """
 <style>
-.answer-panel { background: #f2f4ea; border: 1px solid #d5dac8;
+/* Theme-adaptive: transparent surfaces, translucent tints, inherited text.
+   Hardcoded light backgrounds go unreadable in dark mode. */
+.answer-panel { background: rgba(127,127,127,0.08);
+  border: 1px solid rgba(127,127,127,0.35);
   border-radius: 10px; padding: 1rem 1.2rem; margin: 0.5rem 0; }
-.src-chip { display: inline-block; background: #e2e9d8; color: #2f5d3a;
+.src-chip { display: inline-block; background: rgba(47,93,58,0.18);
+  border: 1px solid rgba(47,93,58,0.45); color: inherit;
   border-radius: 999px; padding: 0.1rem 0.7rem; margin: 0.1rem 0.2rem 0.1rem 0;
   font-size: 0.8rem; font-weight: 600; }
 .pill { display: inline-block; border-radius: 999px; padding: 0.15rem 0.8rem;
-  font-size: 0.8rem; font-weight: 700; }
-.pill-ok { background: #e0ead9; color: #2f5d3a; }
-.pill-warn { background: #f6ead0; color: #8a5a00; }
-.pill-bad { background: #f6dcd6; color: #8f2d22; }
-.stat-line { color: #5a6353; font-size: 0.85rem; }
+  font-size: 0.8rem; font-weight: 700; color: inherit; }
+.pill-ok { background: rgba(47,93,58,0.22); }
+.pill-warn { background: rgba(138,90,0,0.22); }
+.pill-bad { background: rgba(143,45,34,0.22); }
+.stat-line { opacity: 0.7; font-size: 0.85rem; }
 h2 { letter-spacing: -0.01em; }
 </style>
 """
