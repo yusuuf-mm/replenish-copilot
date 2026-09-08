@@ -8,9 +8,9 @@ combining retrieved policy text and a computed fact. **Met.**
 | Piece | Status | Evidence |
 |---|---|---|
 | Problem statement + README skeleton | Done | `README.md` has problem, scope, quickstart |
-| 6 policy docs with `doc_id` | Done | `data/policies/POL-001..006`, all headers verified |
+| 6 policy docs with `doc_id` | Done (+1 fix) | `data/policies/POL-001..007` — POL-007 (demand-spike exceptions) added after live test showed Q8 had no covering doc |
 | 4 synthetic CSVs (Kaggle-seeded) | Done | 75 SKUs / 15 suppliers / 150 POs / 600 demand rows, counts verified |
-| `src/ingest.py` (SQLite + hybrid index) | Done | `data/replenish.db` rebuilt; 25 chunks in text + vector indexes |
+| `src/ingest.py` (SQLite + hybrid index) | Done | `data/replenish.db` rebuilt; 29 chunks in text + vector indexes |
 | Analytics (stockout/SLA/cover-days) | Done | Merged into `src/rag.py` (see Decisions log in tracker) |
 | `src/rag.py` (deterministic hybrid RAG) | Done | Entity regex + parallel SQLite/hybrid-policy retrieval + single OpenRouter call |
 | Manual test, 5 sample questions | Done | Full grounded answer verified (see below) |
@@ -33,7 +33,10 @@ expedited when lead time > 7 days **[POL-004]**.
 
 ## Known issues / watch items
 
-- Free-tier models rate-limit (upstream 429) — retry or swap the `:free` slug.
+- Free-tier models rate-limit (upstream 429) and reasoning models occasionally
+  return empty completions — `synthesize()` retries once, then abstains.
+- If huggingface.co is unreachable, embedding load hangs on retries: set
+  `HF_HUB_OFFLINE=1` (model is cached locally after first download).
 - `*.db` artefacts are gitignored; `ingest.py` rebuilds them (reproducibility
   holds via committed CSVs + policies).
 - HF Hub warnings on first embedding load are harmless (cached model).

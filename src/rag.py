@@ -188,12 +188,18 @@ def synthesize(question: str, ctx: dict) -> str:
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY missing — add it to .env")
     client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
-    resp = client.chat.completions.create(
-        model=model, temperature=0.0,
-        messages=[{"role": "system", "content": INSTRUCTIONS},
-                  {"role": "user", "content": build_prompt(question, ctx)}],
-    )
-    return resp.choices[0].message.content or "I don't know."
+    # Free-tier reasoning models occasionally return empty completions;
+    # retry once, then fall back to abstention instead of crashing.
+    for _ in range(2):
+        resp = client.chat.completions.create(
+            model=model, temperature=0.0,
+            messages=[{"role": "system", "content": INSTRUCTIONS},
+                      {"role": "user", "content": build_prompt(question, ctx)}],
+        )
+        answer = resp.choices[0].message.content
+        if answer and answer.strip():
+            return answer
+    return "I don't know."
 
 
 def rag(question: str) -> dict:
