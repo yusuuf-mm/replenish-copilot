@@ -14,8 +14,7 @@ risk?"* or *"Which supplier delays are violating SLA?"* by combining
 policy**, in one grounded response. Every claim traces to a `SKU-XXX` row or a
 `POL-00X` document — or the system says *"I don't know."*
 
-![Streamlit dashboard demo](assets/demo.gif)
-*(Ask tab + Telemetry tab in action. Drop your recording at `assets/demo.gif`.)*
+![Replenishment copilot demo: grounded answers with citations, judge pills, telemetry](copilot.gif)
 
 ## Contents
 
