@@ -4,7 +4,8 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 ENV PATH="/app/.venv/bin:$PATH" \
-    HF_HUB_OFFLINE=0
+    HF_HUB_OFFLINE=0 \
+    UV_HTTP_TIMEOUT=120
 
 COPY pyproject.toml uv.lock ./
 # uv cache mount: wheel downloads shared across builds/projects, so a failed
