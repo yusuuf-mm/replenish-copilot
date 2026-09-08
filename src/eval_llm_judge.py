@@ -66,7 +66,10 @@ def judge(client: OpenAI, model: str, question: str, expected: str,
                         question=question, expected=expected, answer=answer)},
                 ],
             )
-            text = (resp.choices[0].message.content or "").strip()
+            text = ""
+            choices = resp.choices or []
+            if choices and choices[0].message.content:
+                text = choices[0].message.content.strip()
             score = "good" if "score: good" in text.lower() else (
                 "bad" if "score: bad" in text.lower() else "")
             reason = ""

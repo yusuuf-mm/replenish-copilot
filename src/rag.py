@@ -15,6 +15,7 @@ import os
 import re
 import sqlite3
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -205,18 +206,24 @@ def synthesize(question: str, ctx: dict, instructions: str = INSTRUCTIONS) -> st
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY missing — add it to .env")
     client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
-    # Free-tier reasoning models occasionally return empty completions;
-    # retry once, then fall back to abstention instead of crashing.
-    for _ in range(2):
-        resp = client.chat.completions.create(
-            model=model, temperature=0.0,
-            messages=[{"role": "system", "content": instructions},
-                      {"role": "user", "content": build_prompt(question, ctx)}],
-        )
+    # Free-tier models flake (empty completions, timeouts, rate limits):
+    # retry with backoff, then fall back to abstention instead of crashing.
+    for attempt in range(3):
+        try:
+            resp = client.chat.completions.create(
+                model=model, temperature=0.0,
+                messages=[{"role": "system", "content": instructions},
+                          {"role": "user",
+                           "content": build_prompt(question, ctx)}],
+            )
+        except Exception:
+            time.sleep(5 * (attempt + 1))
+            continue
         choices = resp.choices or []
         answer = choices[0].message.content if choices else None
         if answer and answer.strip():
             return answer
+        time.sleep(3)
     return "I don't know."
 
 

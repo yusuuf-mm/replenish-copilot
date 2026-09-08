@@ -3,3 +3,54 @@ Which SKUs are at stockout risk this week?,POL-003,A-citations,"SKU-032, SKU-059
 Which SKUs are at stockout risk this week?,POL-003,B-plain,"SKU-032, SKU-059, SKU-069, SKU-014, SKU-007, SKU-073, SKU-052, SKU-061, SKU-070, SKU-063 [SKU-032][SKU-059][SKU-069][SKU-014][SKU-007][SKU-073][SKU-052][SKU-061][SKU-070][SKU-063]",bad,"The answer merely lists SKUs without showing they satisfy the stock<=reorder_point condition, and includes duplicate formatting, so it does not demonstrate the required facts."
 Why should SKU-014 be reordered now?,POL-003,A-citations,I don't know.,bad,"the answer gives no information about SKU-014's stock level or the reorder point, so it fails to address the expected facts."
 Why should SKU-014 be reordered now?,POL-003,B-plain,"SKU‑014 must be reordered now because its on‑hand quantity (20) is far below both its reorder point (259) and safety stock (69), putting it at risk of stockout and marking it as critical — [POL-003] defines a SKU as at stockout risk when stock_on_hand ≤ reorder_point and as critical when stock_on_hand ≤ safety_stock. In addition, its lead time is 8 days while its cover days are only 0.7 days, which is less than the 7‑day threshold for expedited handling — [POL-004] requires expediting a critical SKU with < 7 days of cover and no inbound PO. Therefore the combination of low inventory, critical status, and insufficient cover triggers an immediate reorder.",bad,judge failed after retries
+What is the safety stock level for SKU-032 and how was it calculated?,POL-001,A-citations,The safety stock for SKU‑032 is 108 units [SKU-032]. It is calculated using the safety‑stock formula (Z‑score × demand standard deviation × √lead time) as defined in the policy [POL-001].,good,The answer provides the safety stock value and cites the correct formula used for its calculation.
+What is the safety stock level for SKU-032 and how was it calculated?,POL-001,B-plain,"The safety stock for SKU‑032 is 108 units, calculated using the safety‑stock formula (Z‑score × demand standard deviation × √lead time) as defined in POL‑001【facts】【POL-001】.",good,"the answer supplies the correct safety‑stock formula and a specific numeric result for SKU‑032, matching the expected facts."
+How is the reorder point formula defined?,POL-001,A-citations,"The reorder point is defined as **(Average Daily Demand × Average Lead Time) + Safety Stock**, which can also be expressed as **Z‑score × Demand Standard Deviation × √(Average Lead Time)**. [POL-001]",good,the answer correctly states the reorder point formula as avg daily demand times avg lead time plus safety stock.
+How is the reorder point formula defined?,POL-001,B-plain,"The reorder point is calculated as **(Average Daily Demand × Average Lead Time) + Safety Stock**, where safety stock equals **Z‑score × Demand Standard Deviation × √(Average Lead Time)** (default Z = 1.65 for A‑items, 1.28 for B‑items, 1.04 for C‑items)【POL-001】.",good,the answer correctly states the reorder point formula as avg daily demand times avg lead time plus safety stock.
+Which supplier delays are violating SLA?,POL-002,A-citations,"The suppliers whose delays are violating SLA are SUP-04, SUP-11, SUP-07, SUP-05, and SUP-08. [SLA-SUP-04] [SLA-SUP-11] [SLA-SUP-07] [SLA-SUP-05] [SLA-SUP-08]",bad,the answer lists additional suppliers beyond the two specified in the expected facts.
+Which supplier delays are violating SLA?,POL-002,B-plain,"SUP-04, SUP-11, SUP-07, SUP-05, SUP-08.  
+- SUP-04: breach = true (late_pos 9)【SLA SUP-04】  
+- SUP-11: breach = true (late_pos 4)【SLA SUP-11】  
+- SUP-07: breach = true (late_pos 4)【SLA SUP-07】  
+- SUP-05: breach = true (late_pos 4)【SLA SUP-05】  
+- SUP-08: breach = true (late_pos 2)【SLA SUP-08】",bad,"The answer adds suppliers (SUP-07, SUP-05, SUP-08) that are not indicated as violating the SLA in the expected facts."
+Which suppliers have the worst on-time performance?,POL-002,A-citations,Vendor SUP-04 Supply Co. [POL-002],bad,The answer names a vendor but gives no indication of its on‑time performance relative to the required below‑90% or below‑80% thresholds.
+Which suppliers have the worst on-time performance?,POL-002,B-plain,"SUP-04 (Vendor SUP-04 Supply Co.) – pos 15, late_pos 9, breach True【sla】",bad,judge failed after retries
+What penalty applies when a supplier repeatedly breaches SLA?,POL-002,A-citations,I don't know.,bad,The answer provides no relevant information about the penalty.
+What penalty applies when a supplier repeatedly breaches SLA?,POL-002,B-plain,I don't know.,bad,"The response offers no relevant information about the penalty, failing to address the expected facts."
+What action should the planner take for critical SKU-007?,POL-003,A-citations,"The planner should raise a purchase order immediately for SKU‑007, expedite the shipment (since the lead time is 8 days > 7 days and cover days are only 0.7 days), and notify the warehouse. [POL-003] [POL-004]",good,the answer includes both required actions (raise PO immediately and expedite because lead time >7 days) and does not contradict any facts.
+What action should the planner take for critical SKU-007?,POL-003,B-plain,"Raise the purchase order immediately, expedite the shipment (since the SKU is critical, has < 7 days of cover and lead time = 8 days), and notify the warehouse. [POL-003][POL-004]",good,the answer includes both required actions (raise PO immediately and expedite because lead time exceeds 7 days) and does not contradict any expected fact.
+Explain the reorder recommendation for SKU-032 using company policy,POL-003,A-citations,"The planner should raise a purchase order immediately for SKU‑032 because it is **critical** (stock_on_hand = 22 ≤ safety_stock = 108) and **at risk** (stock_on_hand = 22 ≤ reorder_point = 366)【POL-003】.  
+
+Since the SKU is critical, has **less than 7 days of cover** (cover_days = 1.1) and a **lead time of 8 days** (which is > 7 days), the policy requires the order to be **expedited** and the warehouse to be notified【POL-004】.  
+
+The recommendation must cite the unit cost for valuation: unit_cost_usd = 19.44 USD【POL-006】.  
+
+**Reorder recommendation:**  
+- Create and submit a PO right away.  
+- Flag the PO for expedited shipping (lead time = 8 days > 7 days, cover = 1.1 days).  
+- Inform the warehouse of the impending receipt.  
+
+[POL-003] & [POL-004] & [POL-006]",bad,judge failed after retries
+Explain the reorder recommendation for SKU-032 using company policy,POL-003,B-plain,I don't know.,bad,the response provides no relevant information about SKU-032 or the policy.
+What does the exception handling SOP say about demand spikes?,POL-007,A-citations,"The SOP states that a demand spike on a critical SKU must never be ignored – it must be logged and the ops manager notified [POL-007]. The response steps are:  
+
+1. Verify the spike is real (compare against forecast and promotion calendar) [POL-007];  
+2. Re‑compute cover‑days with the spiked demand; if cover falls below 7 days, raise an emergency purchase order [POL-007];  
+3. If the supplier’s lead time cannot meet the resulting demand gap, trigger expedited shipping per POL‑004 [POL-007];  
+4. Temporarily increase safety stock by 50 % for the SKU until demand normalizes for three consecutive normal days [POL-007].  
+
+Spike detection is triggered when daily demand exceeds 2 × the forecasted demand for 2 or more consecutive days, after which the planner reviews the demand history and checks the Promotion_Flag before acting [POL-007].",good,the answer correctly states the spike definition (2× forecast for 2+ days) and the emergency PO condition (cover < 7 days).
+What does the exception handling SOP say about demand spikes?,POL-007,B-plain,"The SOP says a demand spike on a critical SKU must never be ignored – it must be logged and the ops manager notified. The planner must first verify the spike (compare actual demand to forecast and promotion calendar). Then recompute cover‑days; if cover drops below 7 days an emergency PO is raised. If the supplier’s lead time cannot meet the shortfall, expedited shipping (per POL‑004) is triggered. Finally, safety stock for the SKU is temporarily increased by 50 % until three consecutive normal‑demand days occur【POL-007】.",bad,"It fails to state that a demand spike is defined as 2× forecast for 2+ days, even though it correctly mentions the emergency PO condition."
+What should be done if a demand spike hits a critical SKU?,POL-007,A-citations,"You must verify that the spike is real, recompute the cover‑days, and if cover drops below 7 days raise an emergency purchase order (and, if the supplier lead time cannot meet the gap, trigger expedited shipping); temporarily raise the SKU’s safety stock by 50 % until demand normalizes, log the exception, and notify the operations manager. [POL-007] [POL-004] [POL-003]",good,"the answer includes never ignoring the spike, logging the exception, and notifying the operations manager as required."
+What should be done if a demand spike hits a critical SKU?,POL-007,B-plain,"If a demand spike occurs on a critical SKU, the planner must first verify that the spike is real (compare forecast vs. actual demand and promotion calendar)【POL-007】. Then:
+
+1. Re‑compute cover‑days with the spiked demand; if cover falls below 7 days, raise an emergency purchase order【POL-007】.  
+2. If the supplier’s lead time cannot meet the shortfall, trigger expedited shipping per POL‑004【POL-007】.  
+3. Temporarily increase the SKU’s safety stock by 50 % until demand returns to normal for three consecutive days【POL-007】.  
+4. Log the exception and notify the operations manager, because spikes on critical SKUs must never be ignored【POL-007】.  
+
+These steps address both the immediate stockout risk (stock_on_hand ≤ safety_stock) and the longer‑term supply‑chain response required for critical items.",good,"the answer includes all expected actions (never ignore, log exception, notify ops manager) and provides additional relevant steps."
+When should the planner use expedited shipping?,POL-004,A-citations,I don't know.,bad,judge failed after retries
+When should the planner use expedited shipping?,POL-004,B-plain,I don't know.,bad,The answer provides no relevant information about when expedited shipping should be used.
+Who approves expedited freight over $500?,POL-004,A-citations,The ops manager approves expedited freight over $500. [POL-004],bad,judge failed after retries
