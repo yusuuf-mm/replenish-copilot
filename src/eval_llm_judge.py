@@ -43,20 +43,28 @@ Expected facts: {expected}
 Answer: {answer}"""
 
 
-def get_client() -> tuple[OpenAI, str]:
-    """OpenRouter client + model from .env."""
+def get_client() -> tuple[OpenAI, str, str]:
+    """OpenRouter client + answer model + judge model from .env.
+
+    The judge model defaults to the answer model; set OPENROUTER_JUDGE_MODEL
+    to a different :free slug when the main pool is rate-limited.
+    """
     load_dotenv(ROOT / ".env")
     api_key = os.environ.get("OPENROUTER_API_KEY", "")
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY missing — add it to .env")
     model = os.environ.get("OPENROUTER_MODEL", "")
-    return OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key), model
+    judge_model = os.environ.get("OPENROUTER_JUDGE_MODEL", model)
+    return (OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key),
+            model, judge_model)
 
 
 def judge(client: OpenAI, model: str, question: str, expected: str,
           answer: str) -> tuple[str, str]:
-    """Return (score, reasoning) with one retry on empty verdicts."""
-    for _ in range(3):
+    """Return (score, reasoning); long backoff on rate limits."""
+    from openai import RateLimitError
+
+    for attempt in range(3):
         try:
             resp = client.chat.completions.create(
                 model=model, temperature=0.0,
@@ -77,7 +85,11 @@ def judge(client: OpenAI, model: str, question: str, expected: str,
                 if line.lower().startswith("reasoning:"):
                     reason = line.split(":", 1)[1].strip()
             if score:
+                time.sleep(12)  # pace free-tier calls
                 return score, reason
+        except RateLimitError:
+            print("judge rate-limited, backing off...", flush=True)
+            time.sleep(60 * (attempt + 1))
         except Exception as e:  # noqa: BLE001 — free-tier flakiness; back off
             print(f"judge retry ({e.__class__.__name__})", flush=True)
             time.sleep(10)
@@ -97,7 +109,7 @@ def rejudge_failed() -> None:
     """Re-run the judge on rows whose verdict is retry-noise, keep answers."""
     with open(OUT, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
-    client, model = get_client()
+    client, _model, judge_model = get_client()
     fixed = 0
     for r in rows:
         if r["reasoning"] != "judge failed after retries":
@@ -106,7 +118,7 @@ def rejudge_failed() -> None:
                   encoding="utf-8") as f:
             expected = {g["question"]: g["expected_facts"]
                         for g in csv.DictReader(f)}
-        score, reason = judge(client, model, r["question"],
+        score, reason = judge(client, judge_model, r["question"],
                               expected.get(r["question"], ""), r["answer"])
         r["score"], r["reasoning"] = score, reason
         fixed += 1
@@ -139,7 +151,7 @@ def main() -> None:
     if args.limit:
         rows = rows[:args.limit]
 
-    client, model = get_client()
+    client, _model, judge_model = get_client()
     done = load_done()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     new_file = not OUT.exists()
@@ -155,7 +167,7 @@ def main() -> None:
                 if (row["question"], name) in done:
                     continue
                 answer = synthesize(row["question"], ctx, instructions=instr)
-                score, reason = judge(client, model, row["question"],
+                score, reason = judge(client, judge_model, row["question"],
                                       row["expected_facts"], answer)
                 w.writerow({"question": row["question"], "doc_id": row["doc_id"],
                             "prompt": name, "answer": answer, "score": score,
