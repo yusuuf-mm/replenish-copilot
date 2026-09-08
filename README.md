@@ -28,7 +28,8 @@ cp .env.example .env   # set OPENROUTER_API_KEY
 
 uv run python scripts/generate_data.py   # seed data (uses supply_chain_dataset1.csv when present)
 uv run python src/ingest.py              # load SQLite + build hybrid policy index
-uv run streamlit run src/app.py
+uv run streamlit run src/app.py          # Chat tab + Dashboard tab (http://localhost:8501)
+uv run pytest -q                         # 6 offline unit tests
 ```
 
 Docker (no external services — all retrieval is local):
@@ -45,6 +46,15 @@ docker-compose up --build
 4. Every answer logs to telemetry (`conversations` + `feedback`); dashboard shows Volume, Latency p50/p95, Cost, Feedback, Relevance.
 
 No agent loops — full flow is a single deterministic pass.
+
+## Interface
+
+- **Chat tab**: question box, grounded answer with `[SKU-XXX]`/`[POL-00X]`
+  citations, expandable sources, latency/token readout, +1/-1 feedback,
+  sampled online-judge verdict (failures skipped, never block the answer).
+- **Dashboard tab**: request volume, latency chart (p50/p95 in caption),
+  cumulative cost, feedback split, judge-relevance distribution, recent
+  conversations table.
 
 ## Data
 

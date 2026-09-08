@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      - HF_HUB_OFFLINE=1   # model baked into image; no download at runtime
+    volumes:
+      - ./data:/app/data   # persist SQLite, indexes, telemetry across restarts
